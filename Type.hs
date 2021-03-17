@@ -91,9 +91,15 @@ solve' (Chain [e]) = e
 solve' (Chain (e:e2:rest)) = solve' (Chain ((merge e e2):rest))
 
 merge :: Exp -> Exp -> Exp
-merge (Atomic t1) (Atomic t2) = Atomic (merge' t1 t2)
+merge (Atomic t1) (Atomic t2) = Atomic (apply t1 t2)
 
+
+{-
 merge' :: Type -> Type -> Type
 merge' Void Void = error "LA EVALUACION DADA NO ES VALIDA"
 merge' anyt Void = anyt
 merge' ()
+-}
+
+apply :: Exp -> Exp -> Exp
+apply 
