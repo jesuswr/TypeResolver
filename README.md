@@ -1,7 +1,9 @@
 # TypeResolver
 Simple type resolver in haskell
 
-doesnt work perfectly but it was interesting
+Doesnt work perfectly but it was interesting
+
+Also it doesnt manage well some errors xD
 
 ```
 BIENVENIDO
