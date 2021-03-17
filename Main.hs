@@ -35,4 +35,5 @@ typeQuery exp typeMap = do
     if not $ containsIds typeMap exp then
         putStrLn "ERROR, UN NOMBRE DADO NO HA SIDO DEFINIDO"
     else do
-        print $ solve (transform exp typeMap)
+        let Atomic e = solve (transform exp typeMap)
+        putStrLn $ show e
