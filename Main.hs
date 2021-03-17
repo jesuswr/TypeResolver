@@ -21,7 +21,18 @@ runMainLoop typeMap = do
             let newTypeMap = M.insert name (convert exp) typeMap
             putStrLn $ "SE DEFINIO '" ++ name ++ "' CON TIPO: " ++ show (convert exp)
             runMainLoop newTypeMap
+        "TIPO" -> do
+            typeQuery  (tail rest) typeMap
+            runMainLoop typeMap
         "SALIR" -> return()
         _ -> do
             putStrLn "COMANDO DESCONOCIDO"
             runMainLoop typeMap
+
+
+typeQuery :: String -> Str2Type -> IO()
+typeQuery exp typeMap = do
+    if not $ containsIds typeMap exp then
+        putStrLn "ERROR, UN NOMBRE DADO NO HA SIDO DEFINIDO"
+    else do
+        print $ solve (transform exp typeMap)
