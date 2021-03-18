@@ -1,4 +1,6 @@
 # TypeResolver
+![meme](meme.png)
+
 Simple type resolver in haskell
 
 Doesnt work perfectly but it was interesting
