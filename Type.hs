@@ -5,16 +5,23 @@ import qualified Data.List as L
 import qualified Data.List.Split as LS
 import qualified Data.Map as M
 
+
+-- data type to manage functions, constants and variables
 data Type = Function Type Type
           | Const String Type
           | Var String Type
           | Void
           deriving (Eq)
 
+
+-- alias to have a map of Types
 type Str2Type = M.Map String Type
 
+
+-- functions to parse the given string to a Type
 convert :: String -> Type
 convert s = parser $ filter (/= ' ') s
+
 
 parser :: String -> Type
 parser []             = Void
@@ -33,6 +40,9 @@ parser rest           =
         (name, newRest) = span C.isAlphaNum rest
         next = parser newRest
 
+
+-- function to get the next string to parse, it looks for the string
+-- after the corresponding closing parenthesis
 nxtString :: String -> Int -> String
 nxtString s 0          = s
 nxtString [] _         = error "PLEASE GIVE A VALID TYPE"
@@ -40,10 +50,14 @@ nxtString (')':rest) n = nxtString rest (n-1)
 nxtString ('(':rest) n = nxtString rest (n+1)
 nxtString (_:rest)   n = nxtString rest n
 
+
+-- function to help the Show instane
 prevString :: Type -> String
 prevString Void = ""
 prevString _    = " -> "
 
+
+-- show instance of Type to print in the correct format
 instance Show Type where
     show (Function t nxtT) = "(" ++ show t ++ ")" ++ (prevString nxtT) ++ show nxtT
     show (Const name nxtT) = name ++ (prevString nxtT) ++ show nxtT 
@@ -51,11 +65,13 @@ instance Show Type where
     show Void              = ""
 
 
-
+-- data to manage expressions to evaluate
 data Exp = Chain [Exp]
          | Atomic Type
          deriving (Show)
 
+
+-- Exp parser
 transform :: String -> Str2Type -> Exp
 transform [] typeMap         = Chain []
 transform ('(':rest) typeMap = do
@@ -71,6 +87,7 @@ transform s typeMap          = do
     Chain ((Atomic typ):nxt)
 
 
+-- function to check if all names in the expression exist
 containsIds :: Str2Type -> String -> Bool
 containsIds typeMap s =
     foldl (&&) True isContained
@@ -80,28 +97,32 @@ containsIds typeMap s =
         names' = LS.splitOneOf "() " s
 
 
+-- function to evaluate expressions, first you solve expressions
+-- inside parenthesis and then you solve the resulting expression
 solve :: Exp -> Exp
 solve (Chain es) = solve' $ Chain (map helper es)
-    
+
+
+-- function to solve expressions inside parenthesis
 helper :: Exp -> Exp
 helper (Chain es) = solve (Chain es)
 helper other      = other
 
+
+-- function to evaluate the expression, basically it takes the
+-- first two, evaluates them and them puts the resulting exp 
+-- at the start of the list and calls itself again
 solve' :: Exp -> Exp
 solve' (Chain [e]) = e
 solve' (Chain (e:e2:rest)) = solve' (Chain ((merge e e2):rest))
 
+
+-- function to get Type out of Exp and call the apply function with them
 merge :: Exp -> Exp -> Exp
 merge (Atomic t1) (Atomic t2) = Atomic (fst $ apply t1 t2 M.empty)
 
 
-{-
-merge' :: Type -> Type -> Type
-merge' Void Void = error "LA EVALUACION DADA NO ES VALIDA"
-merge' anyt Void = anyt
-merge' ()
--}
-
+-- function to apply the second type to the first one (has some bugs)
 apply :: Type -> Type -> Str2Type -> (Type, Str2Type)
 apply (Function p1 p2) (Function q1 q2) typeMap = do
     let (e, newMap) = apply p1 q1 typeMap
@@ -113,7 +134,6 @@ apply (Function p1 p2) (Var name2 q) typeMap    = error "TIPO NO VALIDO"
 
 apply (Function p1 p2) Void typeMap             = 
     (subst (Function p1 p2) typeMap, typeMap)
-
 
 apply (Const name p) (Function q1 q2) typeMap   = error "TIPO NO VALIDO"
 
@@ -164,6 +184,8 @@ apply Void (Var name2 q) typeMap                = error "TIPO NO VALIDO"
 apply Void Void typeMap                         = (Void, typeMap)
 
 
+-- function to make the needed substitutions in the resulting type after
+-- evaluating
 subst :: Type -> Str2Type -> Type
 subst Void typeMap           = Void
 subst (Const name p) typeMap = Const name (subst p typeMap)

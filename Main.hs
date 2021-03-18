@@ -10,6 +10,7 @@ main = do
     runMainLoop M.empty
 
 
+-- function to control the flow of the program
 runMainLoop :: Str2Type -> IO()
 runMainLoop typeMap = do
     putStrLn "\nQUE DESEA HACER?"
@@ -30,6 +31,7 @@ runMainLoop typeMap = do
             runMainLoop typeMap
 
 
+-- this function prints the result of the evaluation of exp
 typeQuery :: String -> Str2Type -> IO()
 typeQuery exp typeMap = do
     if not $ containsIds typeMap exp then
